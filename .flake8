@@ -1,0 +1,16 @@
+[flake8]
+exclude =
+    venv
+    __init__.py
+    __pycache__
+    .mypy_cache
+    .git
+
+max-line-length = 90
+
+docstrings-convention = google
+
+# D100: Missing docstring in public module
+# D213: Multi-line docstring summary should start at the second line
+# W503: Allow line break before binary operator
+ignore = D100, D213, W503
