@@ -18,7 +18,7 @@ def debug_reading_json(prompts, functions) -> None:
 def main() -> None:
 	try:
 		prompts = Parser.load_prompts()
-		functions = Parser.load_functions()
+		functions = Parser.load_function_definitions()
 		debug_reading_json(prompts, functions)
 	except CallMeMaybeError as e:
 		print(e)

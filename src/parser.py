@@ -1,13 +1,16 @@
 import json
 from typing import List
 from pathlib import Path
+from pydantic import ValidationError
 
+from src.core.models import FunctionDefinition, PromptDefinition
 from src.settings import FUNCTIONS_PATH, PROMPTS_PATH
 from src.errors import ParsingError
 
 
 class Parser():
-	def read_json(self, path: Path) -> None:
+	@staticmethod
+	def read_json(path: Path) -> None:
 		try:
 			with path.open(encoding="utf-8") as file:
 				return json.load(file)
@@ -20,9 +23,35 @@ class Parser():
 				f"Invalid JSON format in file: {path}"
 			)
 
-	def load_functions(self) -> None:
-		data = self.read_json(FUNCTIONS_PATH)
-		return data
+	@staticmethod
+	def load_function_definitions() -> List[FunctionDefinition]:
+		functions: List[FunctionDefinition] = []
 
-	def load_prompts(self):
-		return []
+		data = Parser.read_json(FUNCTIONS_PATH)
+		if not isinstance(data, list):
+			raise ParsingError("Invalid JSON type format. Has to be a list.")
+
+		try:
+			for item in data:
+				function = FunctionDefinition.model_validate(item)
+				functions.append(function)
+		except ValidationError:
+			raise ParsingError(f"Invalid parameter at: {item}")
+
+		return functions
+
+	@staticmethod
+	def load_prompts() -> List[PromptDefinition]:
+		prompts: List[PromptDefinition] = []
+
+		data = Parser.read_json(PROMPTS_PATH)
+		if not isinstance(data, list):
+			raise ParsingError("Invalid JSON type format. Has to be a list.")
+		try:
+			for item in data:
+				prompt = PromptDefinition.model_validate(item)
+				prompts.append(prompt)
+		except ValidationError:
+			raise ParsingError(f"Invalid parameter at: {item}")
+
+		return prompts

@@ -13,10 +13,16 @@ install: venv
 	$(PIP) install -r requirements.txt
 
 run:
-	$(PYTHON) $(MAIN)
+	uv run $(PYTHON) -m src
 
 debug:
 	$(PYTHON) -m pdb $(MAIN)
+
+clean:
+	find . -type d -name "__pycache__" -exec rm -r {} +
+	find . -type d -name ".mypy_cache" -exec rm -r {} +
+	find . -type d -name ".pytest_cache" -exec rm -r {} +
+	find . -type f -name "*.pyc" -delete
 
 lint:
 	$(FLAKE8) .
