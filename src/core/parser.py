@@ -3,14 +3,18 @@ from typing import List
 from pathlib import Path
 from pydantic import ValidationError
 
-from src.core.models import FunctionDefinition, PromptDefinition
+from src.core.models import (
+	FunctionDefinition,
+	PromptDefinition,
+	ModelResponseDefinition,
+)
 from src.settings import FUNCTIONS_PATH, PROMPTS_PATH
 from src.errors import ParsingError
 
 
-class Parser():
+class Parser:
 	@staticmethod
-	def read_json(path: Path) -> None:
+	def read_json(path: Path) -> object:
 		try:
 			with path.open(encoding="utf-8") as file:
 				return json.load(file)
@@ -55,3 +59,17 @@ class Parser():
 			raise ParsingError(f"Invalid parameter at: {item}")
 
 		return prompts
+
+	@staticmethod
+	def parse_model_output(output: str) -> ModelResponseDefinition:
+		try:
+			data = json.loads(output)
+		except json.JSONDecodeError:
+			raise ParsingError("Model did not return valid JSON file")
+
+		try:
+			result = ModelResponseDefinition.model_validate(data)
+		except ValidationError:
+			raise ParsingError("Invalid model output definition.")
+		
+		return result

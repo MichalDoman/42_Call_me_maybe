@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 
 from pydantic import BaseModel
 
@@ -24,9 +24,16 @@ class PromptDefinition(BaseModel):
 	prompt: str
 
 
-class ModelOutputDefinition(BaseModel):
+class ModelResponseDefinition(BaseModel):
+	"""Describe the response of the model"""
+
+	model_config = ConfigDict(extra="forbid")
+
+	name: str
+	parameters: Dict[str, Any]
+
+
+class FunctionCallResult(ModelResponseDefinition):
 	"""Describe the output of the model"""
 
 	prompt: str
-	name: str
-	paramenters: Dict[str, TypeDefinition]

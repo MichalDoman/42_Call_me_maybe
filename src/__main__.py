@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from src.parser import Parser
+from src.core.prompt import prompt_build
+from src.core.parser import Parser
 from src.errors import CallMeMaybeError
 
 
@@ -19,7 +20,8 @@ def main() -> None:
 	try:
 		prompts = Parser.load_prompts()
 		functions = Parser.load_function_definitions()
-		debug_reading_json(prompts, functions)
+		# debug_reading_json(prompts, functions)
+		print(prompt_build(prompts[0], functions))
 	except CallMeMaybeError as e:
 		print(e)
 
