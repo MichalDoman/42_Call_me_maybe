@@ -22,3 +22,11 @@ class PromptDefinition(BaseModel):
 	"""Describe prompt"""
 
 	prompt: str
+
+
+class ModelOutputDefinition(BaseModel):
+	"""Describe the output of the model"""
+
+	prompt: str
+	name: str
+	paramenters: Dict[str, TypeDefinition]
