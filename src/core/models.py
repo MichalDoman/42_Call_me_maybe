@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TypeDefinition(BaseModel):
