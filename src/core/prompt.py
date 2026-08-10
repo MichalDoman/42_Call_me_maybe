@@ -16,11 +16,10 @@ def prompt_build(
 	json_functions = json.dumps(dumped_functions, indent=2)
 
 	return (
-        "Select exactly one function that best matches the user request.\n"
-        "Use only a function from the provided list.\n"
-        "Return one valid JSON object with fields 'name' and 'parameters'.\n"
-        "Do not include explanations, Markdown, or code blocks.\n\n"
-        f"Available functions:\n{json_functions}\n\n"
-        f"User request:\n{user_input}\n\n"
-        "JSON result:\n"
-    )
+		"Choose exactly one function that best matches the user request.\n"
+		"Use only a function from the provided list.\n"
+		"Extract values for all required parameters from the user request.\n\n"
+		f"Available functions:\n{json_functions}\n\n"
+		f"User request:\n{user_input}\n\n"
+		"Function call:\n"
+	)

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from llm_sdk.llm_sdk import Small_LLM_Model
 
@@ -19,3 +19,6 @@ class LLM:
 
     def get_logits(self, token_ids: List[int]) -> List[float]:
         return self.model.get_logits_from_input_ids(token_ids)
+
+    def decode(self, token_ids: List[int]) -> str | None:
+        return self.model.decode(token_ids)

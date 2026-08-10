@@ -3,6 +3,7 @@ from pathlib import Path
 from src.core.prompt import prompt_build
 from src.core.parser import Parser
 from src.core.llm_core import LLM
+from src.core.constrained_decoder import ConstrainedDecoder
 from src.errors import CallMeMaybeError
 
 
@@ -23,15 +24,13 @@ def main() -> None:
 		functions = Parser.load_function_definitions()
 		prompt = prompt_build(prompts[0], functions)
 		llm = LLM()
+		constrained_decoder = ConstrainedDecoder(llm)
 
-		token_ids = llm.encode("What is the sum of 2 and 3?")
+		token_ids = llm.encode(prompt)
 		logits = llm.get_logits(token_ids)
+		tokenized_names = constrained_decoder.tokenize_functions_names(functions)
 
-		print("Token IDs:")
-		print(token_ids)
-        
-		print("Number of possible tokens:")
-		print(len(logits))
+		constrained_decoder.get_allowed_tokens(tokenized_names, [8822, 1889, 3744])
 
 	except CallMeMaybeError as e:
 		print(e)
