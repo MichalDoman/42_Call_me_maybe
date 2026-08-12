@@ -26,8 +26,8 @@ def main() -> None:
 		llm = LLM()
 		constrained_decoder = ConstrainedDecoder(llm)
 
-		token_ids = llm.encode(prompt)
-		logits = llm.get_logits(token_ids)
+		prompt_token_ids = llm.encode(prompt)
+		logits = llm.get_logits(prompt_token_ids)
 		tokenized_names = constrained_decoder.tokenize_functions_names(functions)
 
 		constrained_decoder.get_allowed_tokens(tokenized_names, [8822, 1889, 3744])

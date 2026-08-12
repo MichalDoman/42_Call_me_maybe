@@ -47,3 +47,12 @@ class ConstrainedDecoder:
 
 		return allowed_tokens
 
+	def get_best_token(
+		self,
+		logits: List[float],
+		allowed_tokens: List[int]
+	) -> int:
+		pass
+
+	def change_logits_values() -> List[float]:
+		pass
