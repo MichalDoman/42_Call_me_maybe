@@ -22,13 +22,3 @@ class LLM:
 
     def decode(self, token_ids: List[int]) -> str | None:
         return self.model.decode(token_ids)
-
-    def is_valid_function_name(name: str) -> bool:
-        pass
-    
-    def generate_function_names(
-        self,
-        prompt_token_ids: List[int],
-        functions: List[FunctionDefinition]
-    ) -> List[int]:
-        pass

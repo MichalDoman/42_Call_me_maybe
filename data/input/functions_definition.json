@@ -15,6 +15,21 @@
     }
   },
   {
+    "name": "fn_add",
+    "description": "Add two ingredients together and return their concoction.",
+    "parameters": {
+      "a": {
+        "type": "string"
+      },
+      "b": {
+        "type": "string"
+      }
+    },
+    "returns": {
+      "type": "string"
+    }
+  },
+  {
     "name": "fn_greet",
     "description": "Generate a greeting message for a person by name.",
     "parameters": {
