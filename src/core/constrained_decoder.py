@@ -17,12 +17,9 @@ class ConstrainedDecoder:
 		
 		for function in functions:
 			tokenized_functions_names.append(
-				self.llm.encode(function.name)
+				self.llm.encode(function.name + "|")
 			)
-		
-		for tokenized_name in tokenized_functions_names:
-			tokenized_name.append(91)
-		
+
 		return tokenized_functions_names
 
 	def get_allowed_token_ids(
@@ -46,12 +43,12 @@ class ConstrainedDecoder:
 		logits: List[float],
 		allowed_token_ids: List[int]
 	) -> int:
-		masked_logits: List[int] = len(logits) * [-inf]
+		masked_logits: List[float] = len(logits) * [-inf]
 
 		for token_id in allowed_token_ids:
 			masked_logits[token_id] = logits[token_id]
 
-		return logits.index(max(masked_logits))
+		return masked_logits.index(max(masked_logits))
 
 	def generate_function_name(
 		self,
@@ -73,6 +70,18 @@ class ConstrainedDecoder:
 
 			ids_to_prompt = prompt_token_ids + generated_tokens
 			logits = self.llm.get_logits(ids_to_prompt)
+			
+			# print(
+			# 	"\ngenerated:",
+			# 	repr(self.llm.decode(generated_tokens))
+			# )
+
+			# for token_id in allowed_token_ids:
+			# 	print(
+			# 		token_id,
+			# 		repr(self.llm.decode([token_id])),
+			# 		logits[token_id],
+			# 	)
 
 			next_token = self.get_best_token(logits, allowed_token_ids)
 			generated_tokens.append(next_token)
@@ -80,4 +89,4 @@ class ConstrainedDecoder:
 			if generated_tokens in tokenized_names:
 				break
 
-		return self.llm.decode(generated_tokens[:-1])
+		return self.llm.decode(generated_tokens).removesuffix("|")

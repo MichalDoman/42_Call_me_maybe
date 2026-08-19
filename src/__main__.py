@@ -11,16 +11,17 @@ def main() -> None:
 	try:
 		prompts = Parser.load_prompts()
 		functions = Parser.load_function_definitions()
-		prompt = prompt_build("Add water and sand?", functions)
 		llm = LLM()
 		constrained_decoder = ConstrainedDecoder(llm)
 
-		prompt_token_ids = llm.encode(prompt)
-		generated_function_name = constrained_decoder.generate_function_name(
-			prompt_token_ids,
-			functions
-		)
-		print(generated_function_name)
+		for _prompt in prompts:
+			system_prompt = prompt_build(_prompt.prompt, functions)
+			prompt_token_ids = llm.encode(system_prompt)
+			generated_function_name = constrained_decoder.generate_function_name(
+				prompt_token_ids,
+				functions
+			)
+			print(generated_function_name)
 
 	except CallMeMaybeError as e:
 		print(e)
