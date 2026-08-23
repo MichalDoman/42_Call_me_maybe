@@ -23,7 +23,6 @@ def main() -> None:
 			)
 			print(generated_function_name)
 
-
 	except CallMeMaybeError as e:
 		print(e)
 
