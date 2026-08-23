@@ -3,7 +3,7 @@ from typing import List, Dict
 
 from src.core.models import FunctionDefinition
 
-def prompt_build(
+def prompt_function_name_build(
 	user_input: str,
 	functions: List[FunctionDefinition]
 ) -> str:
@@ -26,3 +26,26 @@ def prompt_build(
 		f"User request:\n{user_input}\n\n"
 		"Selected function:\n"
 	)
+
+def prompt_parameters_build(
+	user_input: str,
+	function: FunctionDefinition
+) -> str:
+	dumped_parameters: Dict[str, str] = {}
+
+	dumped_function = function.model_dump()
+	for name, definition in dumped_function["parameters"].items():
+		dumped_parameters[name] = definition["type"]
+
+	json_parameters = json.dumps(dumped_parameters, indent=2)
+
+	return (
+        "Extract the arguments required by the selected function "
+        "from the user request.\n"
+        "Use exactly the parameter names and types defined below.\n"
+        "Do not invent additional parameters.\n"
+        "Return only parameter values in the required structure.\n\n"
+		f"User request:\n{user_input}\n\n"
+        f"Parameters:\n{json_parameters}\n\n"
+        "Parameters:\n"
+    )
