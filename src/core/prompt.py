@@ -29,23 +29,19 @@ def prompt_function_name_build(
 
 def prompt_parameters_build(
 	user_input: str,
+	parameter_name: str,
 	function: FunctionDefinition
 ) -> str:
-	dumped_parameters: Dict[str, str] = {}
-
 	dumped_function = function.model_dump()
-	for name, definition in dumped_function["parameters"].items():
-		dumped_parameters[name] = definition["type"]
-
-	json_parameters = json.dumps(dumped_parameters, indent=2)
 
 	return (
-        "Extract the arguments required by the selected function "
-        "from the user request.\n"
-        "Use exactly the parameter names and types defined below.\n"
-        "Do not invent additional parameters.\n"
-        "Return only parameter values in the required structure.\n\n"
+        "Extract the value of the given parameter, required by "
+		"the selected function from the user request.\n"
+		"Return only the selected parameter value followed immediately by '|'.\n"
+		"The '|' character marks the end of the parameter value.\n"
+		"Output format: parameter_value|\n\n"
 		f"User request:\n{user_input}\n\n"
-        f"Parameters:\n{json_parameters}\n\n"
-        "Parameters:\n"
+        f"Parameter name:\n{parameter_name}\n\n"
+		f"Function definition:\n{dumped_function}\n"
+        "Already generated tokens:\n"
     )

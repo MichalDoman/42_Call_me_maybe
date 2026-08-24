@@ -17,6 +17,9 @@ class FunctionDefinition(BaseModel):
 	parameters: Dict[str, TypeDefinition]
 	returns: TypeDefinition
 
+	def has_given_name(self, function_name: str) -> bool:
+		return function_name == self.name
+
 
 class PromptDefinition(BaseModel):
 	"""Describe prompt"""

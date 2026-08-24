@@ -44,7 +44,7 @@ class ConstrainedDecoder:
 
 		return masked_logits.index(max(masked_logits))
 
-	def generate_from_collection(
+	def generate_from_list(
 		self,
 		prompt_token_ids: List[int],
 		elements: List[str],
@@ -67,7 +67,7 @@ class ConstrainedDecoder:
 
 			next_token = self.get_best_token(
 				logits,
-				allowed_token_ids,
+				allowed_token_ids
 			)
 
 			generated_tokens.append(next_token)
@@ -87,16 +87,35 @@ class ConstrainedDecoder:
 			for function in functions
 		]
 
-		return self.generate_from_collection(prompt_token_ids, function_names)
+		return self.generate_from_list(prompt_token_ids, function_names)
 
-	def generate_number(self, prompt_token_ids: List[int]) -> int | float:
+
+	def generate_float(self, prompt_token_ids: List[int]) -> float:
+		generated_tokens: List[int] = []
+
+		while True:
+			input_ids = prompt_token_ids + generated_tokens
+			logits = self.llm.get_logits(input_ids)
+
+			next_token = logits.index(max(logits))
+
+			generated_tokens.append(next_token)
+			print(self.llm.decode(next_token))
+
+			if self.llm.decode(generated_tokens)[-1] == "|":
+				break
+
+		return self.llm.decode(generated_tokens).removesuffix("|")
+
+
+	def generate_integer(self, prompt_token_ids: List[int]) -> int:
 		pass
 
 	def generate_string(self, prompt_token_ids: List[int]) -> str:
 		pass
 
 	def generate_boolean(self, prompt_token_ids: List[int]) -> bool:
-		result = self.generate_from_collection(
+		result = self.generate_from_list(
 			prompt_token_ids,
 			["true", "false"]
 		)
@@ -106,9 +125,12 @@ class ConstrainedDecoder:
 		self,
 		prompt_token_ids: List[int],
 		parameter_type: str
-	) -> int | str | bool:
+	) -> float | int | str | bool:
 		if parameter_type == "number":
-			return self.generate_number(prompt_token_ids)
+			return self.generate_float(prompt_token_ids)
+
+		if parameter_type == "integer":
+			return self.generate_integer(prompt_token_ids)
 
 		if parameter_type == "string":
 			return self.generate_string(prompt_token_ids)
