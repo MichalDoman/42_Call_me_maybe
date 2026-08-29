@@ -14,14 +14,14 @@ def main() -> None:
 		llm = LLM()
 		decoder = ConstrainedDecoder(llm)
 
-		for user_input in prompts[:1]:
+		for user_input in prompts[1:2]:
 			system_prompt = prompt_function_name_build(user_input.prompt, functions)
 			prompt_token_ids = llm.encode(system_prompt)
 			generated_function_name = decoder.generate_function_name(
 				prompt_token_ids,
 				functions
 			)
-			# print(generated_function_name)
+			print(generated_function_name)
 
 			function = [
 				f for f in functions 
@@ -33,10 +33,13 @@ def main() -> None:
 				system_prompt = prompt_parameters_build(
 					user_input.prompt,
 					parameter,
+					definition.type,
 					function
 				)
 				prompt_token_ids = llm.encode(system_prompt)
 				value = decoder.generate_parameter_value(
+					user_input.prompt,
+					[value for _, value in generated_parameters.items()],
 					prompt_token_ids,
 					definition.type
 				)

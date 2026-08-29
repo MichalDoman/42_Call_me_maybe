@@ -89,24 +89,31 @@ class ConstrainedDecoder:
 
 		return self.generate_from_list(prompt_token_ids, function_names)
 
+	def get_numbers(self, user_input: str, extracted_params: List[str]) -> List[str]:
+		numbers: List[str] = []
+		current: str = ""
 
-	def generate_float(self, prompt_token_ids: List[int]) -> float:
-		generated_tokens: List[int] = []
+		for char in user_input + " ":
+			if char.isdigit():
+				current += char
 
-		while True:
-			input_ids = prompt_token_ids + generated_tokens
-			logits = self.llm.get_logits(input_ids)
+			elif char == "." and current and "." not in current:
+				current += char
 
-			next_token = logits.index(max(logits))
+			elif char == "-" and not current:
+				current = "-"
 
-			generated_tokens.append(next_token)
-			print(self.llm.decode(next_token))
+			else:
+				if current not in {"", "-"}:
+					numbers.append(current)
 
-			if self.llm.decode(generated_tokens)[-1] == "|":
-				break
+				current = ""
 
-		return self.llm.decode(generated_tokens).removesuffix("|")
-
+		return [
+			number
+			for number in numbers
+			if number not in extracted_params
+		]
 
 	def generate_integer(self, prompt_token_ids: List[int]) -> int:
 		pass
@@ -123,11 +130,14 @@ class ConstrainedDecoder:
 
 	def generate_parameter_value(
 		self,
+		user_input: str,
+		extracted_params: List[str],
 		prompt_token_ids: List[int],
 		parameter_type: str
 	) -> float | int | str | bool:
 		if parameter_type == "number":
-			return self.generate_float(prompt_token_ids)
+			numbers = self.get_numbers(user_input, extracted_params)
+			return self.generate_from_list(prompt_token_ids, numbers)
 
 		if parameter_type == "integer":
 			return self.generate_integer(prompt_token_ids)

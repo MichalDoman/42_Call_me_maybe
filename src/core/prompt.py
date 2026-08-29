@@ -28,20 +28,29 @@ def prompt_function_name_build(
 	)
 
 def prompt_parameters_build(
-	user_input: str,
-	parameter_name: str,
-	function: FunctionDefinition
+    user_input: str,
+    parameter_name: str,
+    parameter_type: str,
+    function: FunctionDefinition,
 ) -> str:
-	dumped_function = function.model_dump()
+    json_function = json.dumps(
+        function.model_dump(),
+        indent=2,
+    )
 
-	return (
-        "Extract the value of the given parameter, required by "
-		"the selected function from the user request.\n"
-		"Return only the selected parameter value followed immediately by '|'.\n"
-		"The '|' character marks the end of the parameter value.\n"
-		"Output format: parameter_value|\n\n"
-		f"User request:\n{user_input}\n\n"
-        f"Parameter name:\n{parameter_name}\n\n"
-		f"Function definition:\n{dumped_function}\n"
-        "Already generated tokens:\n"
+    return (
+        "Extract exactly one parameter value from the user request.\n"
+        "Use the function description and parameter definitions "
+        "to determine which value belongs to the requested parameter.\n"
+        f"The required parameter is '{parameter_name}' "
+        f"and its type is '{parameter_type}'.\n"
+        "Return only its value followed immediately by '|'.\n"
+        "Do not explain your answer and do not add extra text.\n"
+        "For number or integer parameters, return only a numeric value.\n"
+        "For boolean parameters, return only true or false.\n"
+        "For string parameters, return only the string value.\n"
+        "The '|' character marks the end of the value.\n\n"
+        f"Function definition:\n{json_function}\n\n"
+        f"User request:\n{user_input}\n\n"
+        f"Value for '{parameter_name}':\n"
     )
