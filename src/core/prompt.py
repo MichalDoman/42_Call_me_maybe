@@ -38,19 +38,60 @@ def prompt_parameters_build(
         indent=2,
     )
 
+    type_instructions = {
+        "number": (
+            "The parameter type is number.\n"
+            "Return only a numeric value.\n"
+            "The value may be an integer or a decimal number.\n"
+            "Convert written numbers to digits when necessary.\n"
+            "Examples: 'two' -> 2|, 'three point five' -> 3.5|\n"
+            "Do not add quotes or any other text.\n"
+        ),
+        "integer": (
+            "The parameter type is integer.\n"
+            "Return only a whole number without a decimal point.\n"
+            "Convert written numbers to digits when necessary.\n"
+            "Examples: 'two' -> 2|, 'minus five' -> -5|\n"
+            "Do not add quotes or any other text.\n"
+        ),
+        "string": (
+            "The parameter type is string.\n"
+            "Return only the exact text value required by the parameter.\n"
+            "Do not add quotes, labels, explanations, or extra words.\n"
+            "If the request asks to replace, reverse, transform, or otherwise process a string, "
+            "the string to process will usually be enclosed in single quotes '...' "
+            'or double quotes "...".\n'
+            "In that case, return only the text inside the quotes.\n"
+            "Example: for 'Greet shrek' and parameter 'name', return shrek|\n"
+            "Example: for \"Reverse the string 'hello'\", return hello|\n"
+        ),
+        "boolean": (
+            "The parameter type is boolean.\n"
+            "Return only true| or false|.\n"
+            "Infer the boolean value from the meaning of the user request.\n"
+            "Do not return yes, no, 1, 0, or any explanation.\n"
+        ),
+    }
+
+    if parameter_type not in type_instructions:
+        type_instruction = (
+            f"The parameter type is {parameter_type}.\n"
+            "Return only the value followed immediately by '|'.\n"
+        )
+    else:
+        type_instruction = type_instructions[parameter_type]
+
     return (
-        "Extract exactly one parameter value from the user request.\n"
-        "Use the function description and parameter definitions "
-        "to determine which value belongs to the requested parameter.\n"
-        f"The required parameter is '{parameter_name}' "
-        f"and its type is '{parameter_type}'.\n"
-        "Return only its value followed immediately by '|'.\n"
-        "Do not explain your answer and do not add extra text.\n"
-        "For number or integer parameters, return only a numeric value.\n"
-        "For boolean parameters, return only true or false.\n"
-        "For string parameters, return only the string value.\n"
-        "The '|' character marks the end of the value.\n\n"
+        "Extract exactly one value for the specified function parameter.\n"
+        "Use the meaning of the user request and the function definition "
+        "to determine the correct value.\n"
+        "Return only the parameter value followed immediately by '|'.\n"
+        "The '|' character marks the end of the value.\n"
+        "Do not return explanations or additional text.\n\n"
+        f"{type_instruction}\n"
         f"Function definition:\n{json_function}\n\n"
         f"User request:\n{user_input}\n\n"
-        f"Value for '{parameter_name}':\n"
+        f"Parameter name: {parameter_name}\n"
+        f"Parameter type: {parameter_type}\n\n"
+        f"Value for {parameter_name}: "
     )

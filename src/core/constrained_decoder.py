@@ -4,11 +4,13 @@ from math import inf
 from src.core.llm_core import LLM
 from src.core.models import FunctionDefinition
 from src.errors import CallMeMaybeError
+from src.core.vocab_processor import VocabProcessor
 
 
 class ConstrainedDecoder:
 	def __init__(self, llm: LLM) -> None:
 		self.llm = llm
+		self.vocab = VocabProcessor(self.llm)
 
 	def tokenize(self, elements: List[str]) -> List[List[int]]:
 		return [
@@ -115,11 +117,133 @@ class ConstrainedDecoder:
 			if number not in extracted_params
 		]
 
-	def generate_integer(self, prompt_token_ids: List[int]) -> int:
-		pass
+	def generate_raw_value(
+		self,
+		prompt_token_ids: List[int],
+		max_tokens: int = 10,
+	) -> str:
+		generated_tokens: List[int] = []
 
-	def generate_string(self, prompt_token_ids: List[int]) -> str:
-		pass
+		for _ in range(max_tokens):
+			input_ids = prompt_token_ids + generated_tokens
+			logits = self.llm.get_logits(input_ids)
+
+			next_token = logits.index(max(logits))
+			generated_tokens.append(next_token)
+
+			generated_text = self.llm.decode(generated_tokens)
+
+			if "|" in generated_text:
+				return generated_text.split("|", 1)[0].strip()
+
+		raise CallMeMaybeError(
+			"LLM did not finish parameter generation."
+		)
+
+	def generate_number(
+		self,
+		prompt_token_ids: List[int],
+		max_tokens: int = 20,
+	) -> float:
+		generated_tokens: List[int] = []
+		has_digit = False
+		has_dot = False
+
+		for _ in range(max_tokens):
+			allowed_token_ids: Set[int] = set(
+				self.vocab.digit_token_ids
+			)
+
+			# Minus tylko na samym początku.
+			if not generated_tokens:
+				if self.vocab.minus_token_id is not None:
+					allowed_token_ids.add(
+						self.vocab.minus_token_id
+					)
+
+			# Kropka dopiero po co najmniej jednej cyfrze
+			# i tylko jedna.
+			if has_digit and not has_dot:
+				if self.vocab.dot_token_id is not None:
+					allowed_token_ids.add(
+						self.vocab.dot_token_id
+					)
+
+			# Można zakończyć tylko poprawną liczbę.
+			# Jeśli ostatnim znakiem jest ".", jeszcze nie kończymy.
+			if (
+				has_digit
+				and generated_tokens
+				and generated_tokens[-1] != self.vocab.dot_token_id
+			):
+				if self.vocab.end_token_id is not None:
+					allowed_token_ids.add(
+						self.vocab.end_token_id
+					)
+
+			input_ids = prompt_token_ids + generated_tokens
+			logits = self.llm.get_logits(input_ids)
+
+			next_token = self.get_best_token(
+				logits,
+				allowed_token_ids,
+			)
+
+			generated_tokens.append(next_token)
+
+			if next_token == self.vocab.end_token_id:
+				value = self.llm.decode(
+					generated_tokens[:-1]
+				)
+
+				return float(value)
+
+			if next_token == self.vocab.dot_token_id:
+				has_dot = True
+
+			if next_token in self.vocab.digit_token_ids:
+				has_digit = True
+
+		raise CallMeMaybeError(
+			"LLM did not finish number generation."
+		)
+
+	# def generate_number(
+	# 	self,
+	# 	user_input: str,
+	# 	extracted_params: List[int],
+	# 	prompt_token_ids: List[int]
+	# ) -> int | float:
+	# 	numbers = self.get_numbers(user_input, extracted_params)
+
+	# 	if numbers:
+	# 		result = self.generate_from_list(prompt_token_ids, numbers)
+	# 		return float(result)
+
+	# 	return self.generate_raw_value(prompt_token_ids)
+
+	def generate_string(
+		self,
+		prompt_token_ids: List[int],
+		max_tokens: int = 10,
+	) -> str:
+		generated_tokens: List[int] = []
+
+		for _ in range(max_tokens):
+			input_ids = prompt_token_ids + generated_tokens
+			logits = self.llm.get_logits(input_ids)
+
+			next_token = logits.index(max(logits))
+			generated_tokens.append(next_token)
+
+			generated_text = self.llm.decode(generated_tokens)
+
+			if "|" in generated_text:
+				return generated_text.split("|", 1)[0].strip()
+
+		raise CallMeMaybeError(
+			"LLM did not finish string parameter generation."
+		)
 
 	def generate_boolean(self, prompt_token_ids: List[int]) -> bool:
 		result = self.generate_from_list(
@@ -127,6 +251,16 @@ class ConstrainedDecoder:
 			["true", "false"]
 		)
 		return result == "true"
+
+	def get_words(self, user_input: str) -> List[str]:
+		split_user_input = user_input.split()
+
+		for word in split_user_input:
+			if (word[0], word[-1]) in [("'", "'"), ("\"", "\"")]:
+				return [word[1:-1]]
+		
+		return split_user_input
+
 
 	def generate_parameter_value(
 		self,
@@ -136,14 +270,22 @@ class ConstrainedDecoder:
 		parameter_type: str
 	) -> float | int | str | bool:
 		if parameter_type == "number":
-			numbers = self.get_numbers(user_input, extracted_params)
-			return self.generate_from_list(prompt_token_ids, numbers)
+			return self.generate_number(
+				prompt_token_ids
+			)
 
 		if parameter_type == "integer":
-			return self.generate_integer(prompt_token_ids)
+			return int(self.generate_number(
+				user_input,
+				extracted_params,
+				prompt_token_ids
+			))
 
 		if parameter_type == "string":
-			return self.generate_string(prompt_token_ids)
+			return self.generate_from_list(
+				prompt_token_ids,
+				self.get_words(user_input)
+			)
 
 		if parameter_type == "boolean":
 			return self.generate_boolean(prompt_token_ids)
