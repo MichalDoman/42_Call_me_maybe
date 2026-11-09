@@ -17,7 +17,7 @@ class App:
 
 	def run(self) -> None:
 		try:
-			for user_input in self.prompts[:1]:
+			for user_input in self.prompts[:3]:
 				system_prompt = prompt_function_name_build(user_input.prompt, self.functions)
 				prompt_token_ids = self.llm.encode(system_prompt)
 				generated_function_name = self.decoder.generate_function_name(
@@ -42,7 +42,6 @@ class App:
 					prompt_token_ids = self.llm.encode(system_prompt)
 					value = self.decoder.generate_parameter_value(
 						user_input.prompt,
-						[str(value) for _, value in generated_parameters.items()],
 						prompt_token_ids,
 						definition.type
 					)

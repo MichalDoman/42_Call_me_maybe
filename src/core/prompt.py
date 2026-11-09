@@ -44,14 +44,12 @@ def prompt_parameters_build(
             "Return only a numeric value.\n"
             "The value may be an integer or a decimal number.\n"
             "Convert written numbers to digits when necessary.\n"
-            "Examples: 'two' -> 2|, 'three point five' -> 3.5|\n"
             "Do not add quotes or any other text.\n"
         ),
         "integer": (
             "The parameter type is integer.\n"
             "Return only a whole number without a decimal point.\n"
             "Convert written numbers to digits when necessary.\n"
-            "Examples: 'two' -> 2|, 'minus five' -> -5|\n"
             "Do not add quotes or any other text.\n"
         ),
         "string": (
@@ -83,6 +81,9 @@ def prompt_parameters_build(
 
     return (
         "Extract exactly one value for the specified function parameter.\n"
+        "Extract the argument; do not compute the function result.\n"
+        "Preserve numeric values exactly; do not append extra digits.\n"
+        "Place | immediately after the complete value.\n"
         "Use the meaning of the user request and the function definition "
         "to determine the correct value.\n"
         "Return only the parameter value followed immediately by '|'.\n"
